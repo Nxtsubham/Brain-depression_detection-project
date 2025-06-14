@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bio Amp Brain Signal Prediction</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Depression test detection System</h1>
+    <form method="POST">
+        <label for="input_data">Enter 8 feature values (comma-separated):</label>
+        <input type="text" id="input_data" name="input_data" required>
+        <button type="submit">Predict</button>
+    </form>
+    
+    {% if prediction is not none %}
+    <h2>Prediction: {{ prediction }}</h2>
+    {% endif %}
+    <b>Mental health is Good for(0.5 to 1.0).</b><br>
+    <b>Mental health is Bad for(0.0 to 0.4999).</b><br>
+
+    <h1>Upload the Csv file</h1>
+    <p><a href="{{ url_for('upload_file') }}">Upload a CSV file</a></p>
+    <!--
+    <h1>serial Monitoring</h1>
+    <form action="{{ url_for('start_serial') }}" method="get">
+        <button type="submit">Start Serial</button>
+    </form>
+    <form action="{{ url_for('stop_serial') }}" method="get">
+        <button type="submit">Stop Serial</button>
+    </form>
+-->
+
+    <h2>Serial Controls</h2>
+    <form action="{{ url_for('start_serial') }}" method="get" style="display:inline;">
+        <button type="submit">Start Serial</button>
+    </form>
+    <form action="{{ url_for('stop_serial') }}" method="get" style="display:inline;">
+        <button type="submit">Stop Serial</button>
+    </form>
+
+    <h2>Live Serial Data</h2>
+    <table border="1">
+        <thead>
+            <tr><th>Timestamp</th><th>Signal</th></tr>
+        </thead>
+        <tbody id="serial-data-body"></tbody>
+    </table>
+
+    <script>
+        async function fetchSerialData() {
+            try {
+                const response = await fetch('/serial_data');
+                const data = await response.json();
+                const tbody = document.getElementById('serial-data-body');
+                tbody.innerHTML = '';
+
+                if (Array.isArray(data)) {
+                    data.forEach(row => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `<td>${row[0]}</td><td>${row[1]}</td>`;
+                        tbody.appendChild(tr);
+                    });
+                }
+            } catch (err) {
+                console.error('Error fetching serial data:', err);
+            }
+        }
+
+        setInterval(fetchSerialData, 2000); // refresh every 2 seconds
+        fetchSerialData(); // initial load
+    </script>
+</body>
+</html>
